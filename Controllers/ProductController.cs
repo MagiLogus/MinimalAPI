@@ -53,5 +53,58 @@ namespace minimalAPIMongo.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById(string id)
+        {
+            try
+            {
+                var product = await _product.Find(p => p.Id == id).FirstOrDefaultAsync();
+                if (product == null)
+                {
+                    return NotFound("Product not found");
+                }
+                return Ok(product);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(string id, Product updatedProduct)
+        {
+            try
+            {
+                var filter = Builders<Product>.Filter.Eq(p => p.Id, id);
+                var product = await _product.Find(filter).FirstOrDefaultAsync();
+                if (product == null)
+                {
+                    return NotFound("Product not found");
+                }
+
+                // Atualize as propriedades do produto com os novos valores
+                product.Name = updatedProduct.Name;
+                product.Price = updatedProduct.Price;
+                product.AdditionalAttributes = updatedProduct.AdditionalAttributes;
+
+                // Atualize o produto no banco de dados
+                var result = await _product.ReplaceOneAsync(filter, product);
+
+                if (result.IsAcknowledged && result.ModifiedCount > 0)
+                {
+                    return Ok(product);
+                }
+                else
+                {
+                    return BadRequest("Update failed");
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

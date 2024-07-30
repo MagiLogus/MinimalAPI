@@ -60,3 +60,6 @@ app.UseAuthorization();
 
 //Map Controller
 app.MapControllers();
+
+// Start the application
+app.Run();

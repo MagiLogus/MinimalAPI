@@ -9,30 +9,30 @@ namespace minimalAPIMongo.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Produces("application/json")]
-    public class ProductController : ControllerBase
+    public class ClientController : ControllerBase
     {
         /// <summary>
         /// Armazena os dados de acesso da collection 
         /// </summary>
-        private readonly IMongoCollection<Product> _product;
+        private readonly IMongoCollection<Client> _client;
 
         /// <summary>
         /// Construtor que recebe como dependencia o objeto da classe MongoDbService
         /// </summary>
         /// <param name="mongoDbService">Objeto da classe MongoDbService</param>
-        public ProductController(MongoDbService mongoDbService)
+        public ClientController(MongoDbService mongoDbService)
         {
-            //obtem a collection "product"
-            _product = mongoDbService.GetDatabase.GetCollection<Product>("product");
+            // Obtém a collection "clients"
+            _client = mongoDbService.GetDatabase.GetCollection<Client>("clients");
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> Get()
+        public async Task<ActionResult<List<Client>>> Get()
         {
             try
             {
-                var products = await _product.Find(FilterDefinition<Product>.Empty).ToListAsync();
-                return Ok(products);
+                var clients = await _client.Find(FilterDefinition<Client>.Empty).ToListAsync();
+                return Ok(clients);
             }
             catch (Exception e)
             {
@@ -41,12 +41,12 @@ namespace minimalAPIMongo.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create(Product product)
+        public async Task<ActionResult> Create(Client client)
         {
             try
             {
-                await _product.InsertOneAsync(product);
-                return StatusCode(201, product);
+                await _client.InsertOneAsync(client);
+                return StatusCode(201, client);
             }
             catch (Exception e)
             {
@@ -59,12 +59,12 @@ namespace minimalAPIMongo.Controllers
         {
             try
             {
-                var product = await _product.Find(p => p.Id == id).FirstOrDefaultAsync();
-                if (product == null)
+                var client = await _client.Find(c => c.Id == id).FirstOrDefaultAsync();
+                if (client == null)
                 {
-                    return NotFound("Produto não encontrado!");
+                    return NotFound("Cliente não encontrado!");
                 }
-                return Ok(product);
+                return Ok(client);
             }
             catch (Exception e)
             {
@@ -73,32 +73,34 @@ namespace minimalAPIMongo.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, Product updatedProduct)
+        public async Task<ActionResult> Update(string id, Client updatedClient)
         {
             try
             {
-                var filter = Builders<Product>.Filter.Eq(p => p.Id, id);
-                var product = await _product.Find(filter).FirstOrDefaultAsync();
-                if (product == null)
+                var filter = Builders<Client>.Filter.Eq(c => c.Id, id);
+                var client = await _client.Find(filter).FirstOrDefaultAsync();
+                if (client == null)
                 {
-                    return NotFound("Produto não encontrado!");
+                    return NotFound("Cliente não encontrado!");
                 }
 
-                // Atualize as propriedades do produto com os novos valores
-                product.Name = updatedProduct.Name;
-                product.Price = updatedProduct.Price;
-                product.AdditionalAttributes = updatedProduct.AdditionalAttributes;
+                // Atualize as propriedades do cliente com os novos valores
+                client.UserId = updatedClient.UserId;
+                client.CPF = updatedClient.CPF;
+                client.Phone = updatedClient.Phone;
+                client.Address = updatedClient.Address;
+                client.AdditionalAttributes = updatedClient.AdditionalAttributes;
 
-                // Atualize o produto no banco de dados
-                var result = await _product.ReplaceOneAsync(filter, product);
+                // Atualize o cliente no banco de dados
+                var result = await _client.ReplaceOneAsync(filter, client);
 
                 if (result.IsAcknowledged && result.ModifiedCount > 0)
                 {
-                    return Ok(product);
+                    return Ok(client);
                 }
                 else
                 {
-                    return BadRequest("Erro Atualização");
+                    return BadRequest("Erro na atualização");
                 }
             }
             catch (Exception e)
@@ -112,16 +114,16 @@ namespace minimalAPIMongo.Controllers
         {
             try
             {
-                var filter = Builders<Product>.Filter.Eq(p => p.Id, id);
-                var result = await _product.DeleteOneAsync(filter);
+                var filter = Builders<Client>.Filter.Eq(c => c.Id, id);
+                var result = await _client.DeleteOneAsync(filter);
 
                 if (result.DeletedCount > 0)
                 {
-                    return Ok("Produto deletado com sucesso!");
+                    return Ok("Cliente deletado com sucesso!");
                 }
                 else
                 {
-                    return NotFound("Produto não encontrado!");
+                    return NotFound("Cliente não encontrado!");
                 }
             }
             catch (Exception e)
@@ -131,3 +133,4 @@ namespace minimalAPIMongo.Controllers
         }
     }
 }
+
